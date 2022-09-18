@@ -1,0 +1,78 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require('cors');
+const socket = require("socket.io");
+require("dotenv").config();
+
+
+const {
+     authRouter
+} = require("./routes/authRoute");
+const {
+     userRouter
+} = require("./routes/userRoute");
+const {
+     messageRouter
+} = require("./routes/messagesRoute");
+const {
+     mainRouter
+} = require('./routes/mainRoutes');
+const {
+     newSession
+} = require("./middlewares/session");
+const { postRouter } = require("./routes/postRoute");
+
+PORT = process.env.PORT;
+dbURI = process.env.dbURI;
+
+const app = express();
+
+app.use(newSession);
+app.use(express.json());
+app.use(cors());
+app.use("/public/", express.static('./public'));
+
+
+
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+app.use("/api/post", postRouter);
+app.use("/api/messages", messageRouter);
+app.use('/', mainRouter);
+
+mongoose
+     .connect(dbURI, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+     })
+     .then((result) => {
+          console.log(`PingFly's Database connected`);
+     })
+     .catch((error) => console.log(error));
+
+const server = app.listen(PORT, (req, res) => {
+     console.log(`PingFly's Server is running at http://localhost:${PORT}`);
+})
+
+const io = socket(server, {
+     cors: {
+          origin: "http://localhost:3000",
+          credentials: true,
+     },
+});
+
+global.onlineUsers = new Map();
+
+io.on("connection", (socket) => {
+     global.chatSocket = socket;
+     socket.on("add-user", (userId) => {
+          onlineUsers.set(userId, socket.id);
+     });
+
+     socket.on("send-msg", (data) => {
+          const sendUserSocket = onlineUsers.get(data.to);
+          if (sendUserSocket) {
+               socket.to(sendUserSocket).emit("msg-receive", data.message);
+          }
+     })
+})
