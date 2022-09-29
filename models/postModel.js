@@ -12,20 +12,10 @@ const postSchema = new Schema({
         type: Number,
     },
     author: {
-        firstName: {
-            type: String,
-            required: true,
-        },
-        lastName: {
-            type: String,
-            required: true,
-        },
-        image: {
-            type: String,
-            required: true,
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Users',
+        required: true
     }
-
 }, {
     timestamps: true
 });

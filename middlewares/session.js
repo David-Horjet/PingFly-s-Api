@@ -1,8 +1,5 @@
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const {
-     loginUser
-} = require('../controllers/authController');
 
 
 const newSession = session({

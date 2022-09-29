@@ -20,7 +20,9 @@ const {
 const {
      newSession
 } = require("./middlewares/session");
-const { postRouter } = require("./routes/postRoute");
+const {
+     postRouter
+} = require("./routes/postRoute");
 
 PORT = process.env.PORT;
 dbURI = process.env.dbURI;
@@ -31,6 +33,10 @@ app.use(newSession);
 app.use(express.json());
 app.use(cors());
 app.use("/public/", express.static('./public'));
+app.use((req, res, next) => {
+     res.locals.user = req.session.user;
+     next();
+})
 
 
 

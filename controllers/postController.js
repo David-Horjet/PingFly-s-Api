@@ -22,6 +22,7 @@ const allPosts = async (req, res, next) => {
 
 const createPost = async (req, res, next) => {
      try {
+          console.log(req.user);
           const {
                content,
                author

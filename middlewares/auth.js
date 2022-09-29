@@ -1,4 +1,4 @@
-const Users = reuire("../models/userModel.js")
+const Users = require("../models/userModel.js")
 
 loginRequired = async (req, res, next) => {
      if (req.session && req.session.user) {
@@ -11,6 +11,7 @@ loginRequired = async (req, res, next) => {
                     message: "You have to Sign in"
                })
           }
+          console.log(user);
           // If user found
           req.user = user;
           return next();

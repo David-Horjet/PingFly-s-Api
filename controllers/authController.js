@@ -10,18 +10,23 @@ const register = async (req, res, next) => {
      try {
 
           const {
-               firstName,
-               lastName,
+               fullName,
                email,
+               userName,
                password,
           } = req.body;
 
           const salt = await bcrypt.genSalt(10);
           const hashedPassword = await bcrypt.hash(password, salt);
           const casedEmail = email.toLowerCase();
+          const casedUname = userName.toLowerCase();
 
           const emailCheck = await Users.findOne({
                email: casedEmail
+          });
+
+          const unameCheck = await Users.findOne({
+               userName: casedUname
           });
 
           if (emailCheck) {
@@ -31,10 +36,17 @@ const register = async (req, res, next) => {
                })
           }
 
+          if (unameCheck) {
+               return res.json({
+                    status: false,
+                    message: "Username taken"
+               })
+          }
+
           const user = await Users.create({
-               firstName,
-               lastName,
+               fullName,
                email: casedEmail,
+               userName: casedUname,
                password: hashedPassword,
           });
           delete user.password;
@@ -45,7 +57,11 @@ const register = async (req, res, next) => {
                user
           });
      } catch (error) {
-          next(error)
+          next(error);
+          return res.json({
+               status: false,
+               message: "Internal Server Error Occured"
+          })
      }
 }
 
@@ -59,8 +75,6 @@ const login = async (req, res, next) => {
           var user = await Users.findOne({
                email: email.toLowerCase()
           });
-
-          console.log(user);
 
           if (!user) {
                return res.json({
@@ -77,9 +91,11 @@ const login = async (req, res, next) => {
                     msg: "Incorrect Password"
                })
           }
-          delete user.password
 
-          // req.session.user = user;
+          req.session.user = user;
+
+          console.log(req.session);
+
           return res.json({
                status: true,
                msg: "Login Successful",
@@ -87,7 +103,11 @@ const login = async (req, res, next) => {
           })
 
      } catch (error) {
-          next(error)
+          next(error);
+          return res.json({
+               status: false,
+               message: "Internal Server Error Occured"
+          })
      }
 }
 
@@ -126,7 +146,7 @@ const setImage = async (req, res, next) => {
      })
 }
 
-module.exports = {
+module.exports = {                                                        
      register,
      login,
      setImage
